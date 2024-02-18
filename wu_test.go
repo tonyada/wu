@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// - Test log
 func TestLog(t *testing.T) {
 	LogDebugOn()
 	Log("log1")
