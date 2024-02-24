@@ -12,3 +12,14 @@ func TestReplaceSpecialCharsTo(t *testing.T) {
 	replacedEmail := ReplaceSpecialCharsTo(email, "_")
 	assert.Equal(t, "user_domain_com", replacedEmail, "they should be equal")
 }
+func TestChineseToPinyin(t *testing.T) {
+	// replace email special chars with underscore
+	py := ChineseToPinyin("贵州茅台")
+	assert.Equal(t, []string{"gui", "zhou", "mao", "tai"}, py, "they should be equal")
+}
+
+func TestChineseToPinyinInitials(t *testing.T) {
+	// replace email special chars with underscore
+	py := ChineseToPinyinInitials("贵州茅台")
+	assert.Equal(t, "gzmt", py, "they should be equal")
+}
