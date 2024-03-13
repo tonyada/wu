@@ -23,3 +23,8 @@ func TestChineseToPinyinInitials(t *testing.T) {
 	py := ChineseToPinyinInitials("贵州茅台")
 	assert.Equal(t, "gzmt", py, "they should be equal")
 }
+func TestChineseToPinyinInitialsWithEnglishLetters(t *testing.T) {
+	// replace email special chars with underscore
+	py := ChineseToPinyinInitials("TCL科技")
+	assert.Equal(t, "tclkj", py, "they should be equal")
+}
