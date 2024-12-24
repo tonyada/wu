@@ -9,7 +9,7 @@ import (
 
 // use it to set global time check for app expires
 func TimeBomb() {
-	wtime.CheckTimeToExit(2025, 1, 1) // limit app run after 2025-01-01
+	wtime.CheckTimeToExit(2026, 1, 1) // limit app run after 2025-01-01
 }
 
 // SetTimeBomb(2021,1,1)

@@ -15,7 +15,11 @@ import (
 // speak without wait
 func Say(s ...string) error {
 	if runtime.GOOS == "darwin" {
-		return exec.Command("say", s...).Start()
+		cli := str.Fields(fmt.Sprintf("-r 230 \"%v\"", s))
+		cmd := exec.Command("say", cli...)
+		// cmd := exec.Command("say", s...)
+		return cmd.Run()
+		// return exec.Command("say", s...).Start()
 	}
 	if runtime.GOOS == "windows" {
 		return errors.New("not supported")
@@ -46,7 +50,10 @@ func SayInteractive(s ...string) error {
 // waiting for saying finished
 func SayWait(s ...string) error {
 	if runtime.GOOS == "darwin" {
-		return exec.Command("say", s...).Run()
+		cli := str.Fields(fmt.Sprintf("-r 230 \"%v\"", s))
+		cmd := exec.Command("say", cli...)
+		// cmd := exec.Command("say", s...)
+		cmd.Run()
 	}
 	if runtime.GOOS == "windows" {
 		// c:\\Windows\\tts.exe -f 10 -v
