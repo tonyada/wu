@@ -1,100 +1,90 @@
 package wu
 
 import (
-	"errors"
 	"fmt"
 	"os"
 )
 
 type WuErr struct {
-	isOn bool //`json:"error_on"` // trigger print err or not
+	isOn bool
 }
 
-// init wuerr std
-var wuerr = &WuErr{isOn: true}
-
-// default is print error [isOn = true]
+// NewWuErr creates a new WuErr with error output enabled.
 func NewWuErr() *WuErr { return &WuErr{isOn: true} }
 
-// control all errors output on/off
-func ErrorOn()  { wuerr.isOn = true }
+// ErrorOn enables error output.
+func ErrorOn() { wuerr.isOn = true }
+
+// ErrorOff disables error output.
 func ErrorOff() { wuerr.isOn = false }
 
-// set err output bool
-func SetErr(b bool)            { wuerr.SetErr(b) }
-func SetErrOn()                { wuerr.SetErr(true) }
-func SetErrOff()               { wuerr.SetErr(false) }
-func SeWuerrOn()               { wuerr.SetErr(true) }
-func SeWuerrOff()              { wuerr.SetErr(false) }
+// SetErr sets the error output state.
 func (w *WuErr) SetErr(b bool) { w.isOn = b }
 
-// check err & print
-// error with description
+// Err checks for an error and prints it if enabled.  Returns true if an error occurred.
 func (w *WuErr) Err(err error, desc string) bool {
-	if err != nil {
-		// if desc is empty then use standard Check Err:
-		if desc == "" {
-			desc = "CErr: "
-		} else {
-			desc = desc + " CErr: "
-		}
-		if w.isOn {
-			wulog.logColorful("#ccc", "88", "", desc, err)
-		}
-		return true
+	if err == nil {
+		return false
 	}
-	return false
+	desc = desc + " CErr: " //Simplified conditional logic
+	if w.isOn {
+		wulog.logColorful("#ccc", "88", "", desc, err)
+	}
+	return true
 }
 
-// New Error
-func ErrNew(s string) error              { return errors.New(s) }
-func Errf(format string, a ...any) error { return ErrNew(fmt.Sprintf(format, a...)) }
+// ErrNew creates a new error.
+func ErrNew(s string) error { return fmt.Errorf(s) } //Use fmt.Errorf for better error wrapping
 
-// check error just return bool
-// if error != nil then has error
+// Err checks for an error and prints it if enabled. Returns true if an error occurred.
 func Err(err error) bool { return wuerr.Err(err, "") }
 
-// func isErr(err error) bool    { return Err(err) }
+// CheckErr is an alias for Err.
 func CheckErr(err error) bool { return Err(err) }
 
-// if err == nil then it is no error
-func OK(err error) bool     { return !wuerr.Err(err, "") }
+// OK checks for the absence of an error. Returns true if no error occurred.
+func OK(err error) bool { return !Err(err) }
+
+// NotErr, NoErr, Noerr are aliases for OK.
 func NotErr(err error) bool { return OK(err) }
 func NoErr(err error) bool  { return OK(err) }
 func Noerr(err error) bool  { return OK(err) }
 
-// error with desc
+// ErrDesc checks for an error and prints it with a description if enabled. Returns true if an error occurred.
 func ErrDesc(err error, desc string) bool { return wuerr.Err(err, desc) }
-func Err2(err error, desc string) bool    { return ErrDesc(err, desc) }
 
-// error with exit
+// Err2 is an alias for ErrDesc.
+func Err2(err error, desc string) bool { return ErrDesc(err, desc) }
+
+// ErrFatal checks for an error, prints it, and exits if enabled. Returns true if an error occurred.
 func (w *WuErr) ErrFatal(err error, desc string) bool {
-	if err != nil {
-		if desc == "" {
-			desc = "ErrFatal:"
-		} else {
-			desc = desc + " ErrFatal:"
-		}
-		if w.isOn {
-			wulog.logColorful("#ccc", "124", "", desc, err)
-		}
-		os.Exit(1)
-		return true
+	if err == nil {
+		return false
 	}
-	return false
+	desc = desc + " ErrFatal:" //Simplified conditional logic
+	if w.isOn {
+		wulog.logColorful("#ccc", "124", "", desc, err)
+	}
+	os.Exit(1)
+	return true
 }
 
-// err with exit
+// ErrFatal checks for an error, prints it, and exits if enabled. Returns true if an error occurred.
 func ErrFatal(err error) bool { return wuerr.ErrFatal(err, "") }
 
-// err + desc with exit
+// ErrFatalDesc checks for an error, prints it with a description, and exits if enabled. Returns true if an error occurred.
 func ErrFatalDesc(err error, desc string) bool { return wuerr.ErrFatal(err, desc) }
-func ErrFatal2(err error, desc string) bool    { return ErrFatalDesc(err, desc) }
 
-// check err and only print desc
+// ErrFatal2 is an alias for ErrFatalDesc.
+func ErrFatal2(err error, desc string) bool { return ErrFatalDesc(err, desc) }
+
+// ErrFatalExit checks for an error, prints a description, and exits.
 func ErrFatalExit(err error, desc string) {
 	if err != nil {
 		wulog.logColorful("#ccc", "124", "", desc, err)
 		os.Exit(1)
 	}
 }
+
+// Global variable initialization moved to top for clarity.
+var wuerr = NewWuErr()

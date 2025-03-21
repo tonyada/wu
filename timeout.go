@@ -1,43 +1,50 @@
 package wu
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 )
 
-// Yes or no with TimeOut TimeoutYesOrNo("select", 6, false)
-func TimeoutYesOrNo(desc string, timeoutSec int, defaultResult bool) bool {
-	print(desc, " [y/n]")
-	result := defaultResult
-	// scan user input
-	userInputEndSignal := make(chan bool, 1)
+// TimeoutYesOrNo prompts the user for a yes/no answer with a timeout.
+// Returns the defaultResult if the timeout expires or an invalid input is given.
+func TimeoutYesOrNo(desc string, timeout time.Duration, defaultResult bool) bool {
+	fmt.Printf("%s [y/n]: ", desc)
+
+	// Use a buffered reader for more efficient input reading.
+	reader := bufio.NewReader(os.Stdin)
+
+	// Create a channel to receive the user's input.
+	inputChan := make(chan string)
+
+	// Launch a goroutine to read user input.
 	go func() {
-		userInput := ""
-		fmt.Scanf("%s", &userInput)
-		// println("userInput: ", userInput)
-		if userInput == "y" { //@ must be 'y' to YES
-			result = true
-		} else if userInput == "n" {
-			result = false
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			inputChan <- "" // Send empty string on error
+			return
 		}
-		userInputEndSignal <- true
+		inputChan <- strings.TrimSpace(strings.ToLower(input))
 	}()
-	// set timeout
-	timeout := time.After(time.Duration(timeoutSec) * time.Second)
-	isEnd := false
-	for {
-		select {
-		case <-userInputEndSignal:
-			isEnd = true // input running out
-		case <-timeout:
-			isEnd = true // timeout
+
+	// Set a timer for the timeout.
+	timer := time.After(timeout)
+
+	// Wait for either the user input or the timeout.
+	select {
+	case input := <-inputChan:
+		switch input {
+		case "y", "yes":
+			return true
+		case "n", "no":
+			return false
 		default:
-			print(".")
+			return defaultResult // Handle invalid input
 		}
-		if isEnd {
-			break
-		}
-		time.Sleep(time.Second) // loop every sec
+	case <-timer:
+		fmt.Println("\nTimeout!")
+		return defaultResult
 	}
-	return result
 }

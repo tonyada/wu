@@ -125,14 +125,14 @@ func (w *WuLog) logColorful(fg, bg, prefix string, s ...any) {
 		colorOut := termenv.String(" " + fmt.Sprint(s...) + " ")
 		colorOut = colorOut.Foreground(p.Color(fg))
 		colorOut = colorOut.Background(p.Color(bg))
-		output = fmt.Sprintf("%s %s", allFuncNames, fmt.Sprintf("➡ %v", colorOut))
+		output = fmt.Sprintf("%s %s", allFuncNames, fmt.Sprintf(" %v", colorOut))
 
 	} else { // only print out color prefix
 		colorPrefix := termenv.String(prefix)
 		colorPrefix = colorPrefix.Foreground(p.Color(fg))
 		colorPrefix = colorPrefix.Background(p.Color(bg))
 		// print out with colorful prefix
-		output = fmt.Sprintf("➡ %v %v", colorPrefix, fmt.Sprint(s...))
+		output = fmt.Sprintf(" %v %v", colorPrefix, fmt.Sprint(s...))
 	}
 	output += "\n────────────────────────────────────────────────────────────────────────────────────────────────────\n"
 	w.Logger.Output(w.calldepth, output)
