@@ -9,7 +9,7 @@ import (
 
 // 获取结构体中字段的名称
 // get struct all field names
-func GetFieldNames(structName interface{}) []string {
+func GetFieldNames(structName any) []string {
 	t := reflect.TypeOf(structName)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -26,9 +26,9 @@ func GetFieldNames(structName interface{}) []string {
 	return result
 }
 
-//获取结构体中Tag的值，如果没有tag则返回字段值
+// 获取结构体中Tag的值，如果没有tag则返回字段值
 // get struct all 1 tags
-func GetTagsByArrayPos(tagArrPos int, structName interface{}) []string {
+func GetTagsByArrayPos(tagArrPos int, structName any) []string {
 	t := reflect.TypeOf(structName)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -53,7 +53,7 @@ func GetTagsByArrayPos(tagArrPos int, structName interface{}) []string {
 // Get field Tag value
 // struct { MarketCode int `em_clist:"f12"` }
 // GetFieldTagValue("MarketCode", "em_clist", struct)return f12
-func GetFieldTagValue(fieldName, tagName string, structName interface{}) string {
+func GetFieldTagValue(fieldName, tagName string, structName any) string {
 	t := reflect.TypeOf(structName)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -85,10 +85,10 @@ func GetFieldTagValue(fieldName, tagName string, structName interface{}) string 
 
 // struct { MarketCode int `json:"market_code"` }
 // GetFieldTagValue("MarketCode", struct) return market_code
-func GetFieldJsonValue(fieldName string, structName interface{}) string {
+func GetFieldJsonValue(fieldName string, structName any) string {
 	return GetFieldTagValue(fieldName, "json", structName)
 }
-func Print(st interface{}) {
+func Print(st any) {
 	Explicit(reflect.ValueOf(st), 0)
 }
 

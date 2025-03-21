@@ -1,4 +1,4 @@
-# go-httpclient 
+# go-httpclient
 
 [![Travis](https://img.shields.io/travis/ddliu/go-httpclient.svg?style=flat-square)](https://travis-ci.org/ddliu/go-httpclient)
 [![godoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/ddliu/go-httpclient)
@@ -61,8 +61,8 @@ httpclient.Defaults(httpclient.Map {
 })
 ```
 
-The `OPT_XXX` options define basic behaviours of this client, other values are 
-default request headers of this request. They are shared between different HTTP 
+The `OPT_XXX` options define basic behaviours of this client, other values are
+default request headers of this request. They are shared between different HTTP
 requests.
 
 
@@ -90,7 +90,7 @@ httpclient.Post("http://httpbin.org/multipart", map[string]string {
 })
 
 // put json
-httpclient.PutJson("http://httpbin.org/put", 
+httpclient.PutJson("http://httpbin.org/put",
 `{
     "name": "hello",
 }`)
@@ -133,7 +133,7 @@ The `httpclient.Response` is a thin wrap of `http.Response`.
 ```go
 // traditional
 res, err := httpclient.Get("http://google.com")
-bodyBytes, err := ioutil.ReadAll(res.Body)
+bodyBytes, err := io.ReadAll(res.Body)
 res.Body.Close()
 
 // ToString
@@ -169,7 +169,7 @@ fmt.Println(httpclient.CookieValue("uid"))
 
 ### Concurrent Safe
 
-If you want to start many requests concurrently, remember to call the `Begin` 
+If you want to start many requests concurrently, remember to call the `Begin`
 method when you begin:
 
 ```go
@@ -211,7 +211,7 @@ Available options as below:
 - `OPT_CONNECTTIMEOUT`: The number of seconds to wait while trying to connect. Use 0 to wait indefinitely.
 - `OPT_CONNECTTIMEOUT_MS`: The number of milliseconds to wait while trying to connect. Use 0 to wait indefinitely.
 - `OPT_MAXREDIRS`: The maximum amount of HTTP redirections to follow. Use this option alongside `OPT_FOLLOWLOCATION`.
-- `OPT_PROXYTYPE`: Specify the proxy type. Valid options are `PROXY_HTTP`, `PROXY_SOCKS4`, `PROXY_SOCKS5`, `PROXY_SOCKS4A`. Only `PROXY_HTTP` is supported currently. 
+- `OPT_PROXYTYPE`: Specify the proxy type. Valid options are `PROXY_HTTP`, `PROXY_SOCKS4`, `PROXY_SOCKS5`, `PROXY_SOCKS4A`. Only `PROXY_HTTP` is supported currently.
 - `OPT_TIMEOUT`: The maximum number of seconds to allow httpclient functions to execute.
 - `OPT_TIMEOUT_MS`: The maximum number of milliseconds to allow httpclient functions to execute.
 - `OPT_COOKIEJAR`: Set to `true` to enable the default cookiejar, or you can set to a `http.CookieJar` instance to use a customized jar. Default to `true`.
@@ -227,7 +227,7 @@ Available options as below:
 
 ## Seperate Clients
 
-By using the `httpclient.Get`, `httpclient.Post` methods etc, you are using a 
+By using the `httpclient.Get`, `httpclient.Post` methods etc, you are using a
 default shared HTTP client.
 
 If you need more than one client in a single programme. Just create and use them

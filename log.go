@@ -40,54 +40,78 @@ type WuLog struct {
 var p = termenv.ColorProfile()
 
 // init go log with default flags
-var TLogger = log.New(os.Stderr, "", LstdFlags)
+var WuLogger = log.New(os.Stderr, "", LstdFlags)
 
-// init my default WuLog for easy use
-var wulog = &WuLog{Logger: TLogger, prefix: "", calldepth: 4, isOutput: true}
+// init my default wulog for easy use
+var wulog = NewWuLog(WuLogger)
 
+// NewWuLog creates a new WuLog instance.
 func NewWuLog(logger *log.Logger) *WuLog {
-	return &WuLog{Logger: logger, prefix: "", calldepth: 4, isOutput: true}
+	return &WuLog{
+		Logger:    logger,
+		prefix:    "",
+		calldepth: 4,
+		isOutput:  true,
+	}
 }
 
-// control all log output on/off
-func WuLogOn()  { wulog.isOutput = true }
+// WuLogOn enables all log output.
+func WuLogOn() { wulog.isOutput = true }
+
+// WuLogOff disables all log output.
 func WuLogOff() { wulog.isOutput = false }
 
-// debug, output file + line
-func (w *WuLog) DebugOn() { w.SetLogFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile) }
-func LogDebugOn()         { wulog.SetLogFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile) }
+// DebugOn enables debug mode, including file and line information.
+func (w *WuLog) DebugOn() { w.SetLogFlags(LstdDebugFlags) }
 
-func (w *WuLog) DebugOff() { w.SetLogFlags(log.Ldate | log.Ltime) }
-func LogDebugOff()         { wulog.SetLogFlags(log.Ldate | log.Ltime) }
+// LogDebugOn enables debug mode for the default logger.
+func LogDebugOn() { wulog.DebugOn() }
 
-// set log flags with: log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile | log.Lshortfile
+// DebugOff disables debug mode, reverting to standard log flags.
+func (w *WuLog) DebugOff() { w.SetLogFlags(LstdFlags) }
+
+// LogDebugOff disables debug mode for the default logger.
+func LogDebugOff() { wulog.DebugOff() }
+
+// SetLogFlags sets the log flags for the logger.
 func (w *WuLog) SetLogFlags(flag int) { w.Logger.SetFlags(flag) }
-func SetLogFlags(flag int)            { wulog.SetLogFlags(flag) }
 
-// set log prefix
+// SetLogFlags sets the log flags for the default logger.
+func SetLogFlags(flag int) { wulog.SetLogFlags(flag) }
+
+// SetLogPrefix sets the log prefix for the logger.
 func (w *WuLog) SetLogPrefix(s string) { w.Logger.SetPrefix(s) }
-func SetLogPrefix(s string)            { wulog.SetLogPrefix(s) }
 
-// set log output bool
+// SetLogPrefix sets the log prefix for the default logger.
+func SetLogPrefix(s string) { wulog.SetLogPrefix(s) }
+
+// SetLog enables or disables log output for the logger.
 func (w *WuLog) SetLog(b bool) { w.isOutput = b }
-func SetLog(b bool)            { wulog.SetLog(b) }
-func LogOn()                   { wulog.SetLog(true) }
-func LogOff()                  { wulog.SetLog(false) }
 
-// root custom logger
-// log with terminal colors
-// fg supports hex values will automatically degrade colors on terminals not supporting RGB
-// bg supports ANSI colors (0-255)
-func (w *WuLog) logColorful(fg, bg, prefix string, s ...interface{}) {
+// SetLog enables or disables log output for the default logger.
+func SetLog(b bool) { wulog.SetLog(b) }
+
+// LogOn enables log output for the default logger.
+func LogOn() { wulog.SetLog(true) }
+
+// LogOff disables log output for the default logger.
+func LogOff() { wulog.SetLog(false) }
+
+// logColorful logs a message with terminal colors.
+func (w *WuLog) logColorful(fg, bg, prefix string, s ...any) {
 	if !w.isOutput {
 		return
 	}
+
 	output := ""
 	// get all function names
 	allFuncNames := "\n────────────────────────────────────────────────────────────────────────────────────────────────────\n"
 	funcCounter := 0
-	for i := 5; i > 0; i-- {
-		pc, file, line, _ := runtime.Caller(i)
+	for i := 3; i < 8; i++ { // Optimized loop range
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
 		funcName := runtime.FuncForPC(pc).Name()
 		// runtime.main or runtime.goexit
 		if funcName == "" || funcName == "main.main" || strings.Contains(funcName, "reflect.") || strings.Contains(funcName, "wu.") || strings.Contains(funcName, "runtime.") {
@@ -101,25 +125,29 @@ func (w *WuLog) logColorful(fg, bg, prefix string, s ...interface{}) {
 		colorOut := termenv.String(" " + fmt.Sprint(s...) + " ")
 		colorOut = colorOut.Foreground(p.Color(fg))
 		colorOut = colorOut.Background(p.Color(bg))
-		output = fmt.Sprintf("%s %s", allFuncNames, fmt.Sprintf(" %v", colorOut))
+		output = fmt.Sprintf("%s %s", allFuncNames, fmt.Sprintf("➡ %v", colorOut))
 
 	} else { // only print out color prefix
 		colorPrefix := termenv.String(prefix)
 		colorPrefix = colorPrefix.Foreground(p.Color(fg))
 		colorPrefix = colorPrefix.Background(p.Color(bg))
 		// print out with colorful prefix
-		output = fmt.Sprintf(" %v %v", colorPrefix, fmt.Sprint(s...))
+		output = fmt.Sprintf("➡ %v %v", colorPrefix, fmt.Sprint(s...))
 	}
 	output += "\n────────────────────────────────────────────────────────────────────────────────────────────────────\n"
 	w.Logger.Output(w.calldepth, output)
 }
-func LogWithColor(fg, bg string, s ...interface{}) { wulog.logColorful(fg, bg, "", s...) }
-func LogWithColorPrefix(fg, bg, prefix string, s ...interface{}) {
+
+// LogWithColor logs a message with specified foreground and background colors.
+func LogWithColor(fg, bg string, s ...any) { wulog.logColorful(fg, bg, "", s...) }
+
+// LogWithColorPrefix logs a message with a colored prefix and specified colors.
+func LogWithColorPrefix(fg, bg, prefix string, s ...any) {
 	wulog.logColorful(fg, bg, prefix, s...)
 }
 
-// log
-func (w *WuLog) LogType(print_type int, s ...interface{}) {
+// LogType logs a message with a predefined color scheme based on the log type.
+func (w *WuLog) LogType(print_type int, s ...any) {
 	if !w.isOutput {
 		return
 	}
@@ -140,59 +168,94 @@ func (w *WuLog) LogType(print_type int, s ...interface{}) {
 		w.logColorful("", "", "", s...)
 	}
 }
-func Log(s ...interface{})     { wulog.logColorful("", "", "", s...) }
-func MustLog(s ...interface{}) { wulog.Logger.Output(wulog.calldepth, fmt.Sprint(s...)) }
 
-// logs
-func LogNote(s ...interface{})    { wulog.LogType(LOG_NOTE, s...) }
-func LogErr(s ...interface{})     { wulog.LogType(LOG_ERROR, s...) }
-func LogInfo(s ...interface{})    { wulog.LogType(LOG_INFO, s...) }
-func LogWarn(s ...interface{})    { wulog.LogType(LOG_WARNING, s...) }
-func LogDanger(s ...interface{})  { wulog.LogType(LOG_DANGER, s...) }
-func LogSuccess(s ...interface{}) { wulog.LogType(LOG_SUCCESS, s...) }
-func LogOK(s ...interface{})      { wulog.LogType(LOG_SUCCESS, s...) }
+// Log logs a message with default settings.
+func Log(s ...any) { wulog.logColorful("", "", "", s...) }
 
-func LogWithPrefix(prefix string, s ...interface{}) {
+// MustLog logs a message without color and always outputs.
+func MustLog(s ...any) { wulog.Logger.Output(wulog.calldepth, fmt.Sprint(s...)) }
+
+// LogNote logs a note message.
+func LogNote(s ...any) { wulog.LogType(LOG_NOTE, s...) }
+
+// LogErr logs an error message.
+func LogErr(s ...any) { wulog.LogType(LOG_ERROR, s...) }
+
+// LogInfo logs an informational message.
+func LogInfo(s ...any) { wulog.LogType(LOG_INFO, s...) }
+
+// LogWarn logs a warning message.
+func LogWarn(s ...any) { wulog.LogType(LOG_WARNING, s...) }
+
+// LogDanger logs a danger message.
+func LogDanger(s ...any) { wulog.LogType(LOG_DANGER, s...) }
+
+// LogSuccess logs a success message.
+func LogSuccess(s ...any) { wulog.LogType(LOG_SUCCESS, s...) }
+
+// LogOK is an alias for LogSuccess.
+func LogOK(s ...any) { wulog.LogType(LOG_SUCCESS, s...) }
+
+// LogWithPrefix logs a message with a custom prefix.
+func LogWithPrefix(prefix string, s ...any) {
 	wulog.logColorful("#000", "191", "["+prefix+"]", s...)
 }
 
-func LogInfoPrefix(s ...interface{})    { wulog.logColorful("#fff", "26", "[INFO]", s...) }
-func LogWarnPrefix(s ...interface{})    { wulog.logColorful("#000", "226", "[WARN]", s...) }
-func LogDangerPrefix(s ...interface{})  { wulog.logColorful("#fff", "160", "[DAGR]", s...) }
-func LogSuccessPrefix(s ...interface{}) { wulog.logColorful("#000", "118", "[SUCC]", s...) }
-func MustLogln(s ...interface{})        { wulog.Logger.Output(wulog.calldepth, fmt.Sprintln(s...)) }
+// LogInfoPrefix logs an informational message with a "[INFO]" prefix.
+func LogInfoPrefix(s ...any) { wulog.logColorful("#fff", "26", "[INFO]", s...) }
 
-// Logf
-func (w *WuLog) Logf(format string, s ...interface{}) {
+// LogWarnPrefix logs a warning message with a "[WARN]" prefix.
+func LogWarnPrefix(s ...any) { wulog.logColorful("#000", "226", "[WARN]", s...) }
+
+// LogDangerPrefix logs a danger message with a "[DAGR]" prefix.
+func LogDangerPrefix(s ...any) { wulog.logColorful("#fff", "160", "[DAGR]", s...) }
+
+// LogSuccessPrefix logs a success message with a "[SUCC]" prefix.
+func LogSuccessPrefix(s ...any) { wulog.logColorful("#000", "118", "[SUCC]", s...) }
+
+// MustLogln logs a message with a newline without color and always outputs.
+func MustLogln(s ...any) { wulog.Logger.Output(wulog.calldepth, fmt.Sprintln(s...)) }
+
+// Logf logs a formatted message.
+func (w *WuLog) Logf(format string, s ...any) {
 	if w.isOutput {
 		w.Logger.Output(w.calldepth, fmt.Sprintf(format, s...))
 	}
 }
-func Logf(format string, s ...interface{}) { wulog.Logf(format, s...) }
 
-// MustLogf
-func (w *WuLog) MustLogf(format string, s ...interface{}) {
+// Logf logs a formatted message for the default logger.
+func Logf(format string, s ...any) { wulog.Logf(format, s...) }
+
+// MustLogf logs a formatted message without color and always outputs.
+func (w *WuLog) MustLogf(format string, s ...any) {
 	w.Logger.Output(wulog.calldepth, fmt.Sprintf(format, s...))
 }
-func MustLogf(format string, s ...interface{}) { wulog.MustLogf(format, s...) }
 
-// Logfln
-func (w *WuLog) MustLogfln(format string, s ...interface{}) {
+// MustLogf logs a formatted message for the default logger.
+func MustLogf(format string, s ...any) { wulog.MustLogf(format, s...) }
+
+// MustLogfln logs a formatted message with a newline without color and always outputs.
+func (w *WuLog) MustLogfln(format string, s ...any) {
 	w.Logger.Output(wulog.calldepth, fmt.Sprintf(format+"\n", s...))
 }
-func Logfln(format string, s ...interface{}) { wulog.Logf(format+"\n", s...) }
 
-// log.Fatalf
-func (w *WuLog) Fatalf(format string, s ...interface{}) {
+// Logfln logs a formatted message with a newline.
+func Logfln(format string, s ...any) { wulog.Logf(format+"\n", s...) }
+
+// Fatalf logs a formatted message and then exits the program.
+func (w *WuLog) Fatalf(format string, s ...any) {
 	w.Logger.Output(w.calldepth, fmt.Sprintf(format, s...))
 	os.Exit(1)
 }
-func Fatalf(format string, s ...interface{}) { wulog.Fatalf(format, s...) }
 
-func LogStruct(st interface{}) { wulog.LogStruct(st) }
+// Fatalf logs a formatted message for the default logger and then exits the program.
+func Fatalf(format string, s ...any) { wulog.Fatalf(format, s...) }
 
-func (w *WuLog) LogStruct(st interface{}) {
+// LogStruct logs the details of a struct.
+func LogStruct(st any) { wulog.LogStruct(st) }
+
+// LogStruct logs the details of a struct with color.
+func (w *WuLog) LogStruct(st any) {
 	w.logColorful("#fff", "26", "", "LogStruct:")
-	// w.Logger.Output(w.calldepth-1, "\n")
 	structEx.Explicit(reflect.ValueOf(st), 0)
 }

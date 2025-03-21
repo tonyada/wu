@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"io"
-	"io/ioutil"
 	"sync"
 
 	"net"
@@ -90,7 +89,7 @@ var CONST = map[string]int{
 }
 
 // Default options for any clients.
-var defaultOptions = map[int]interface{}{
+var defaultOptions = map[int]any{
 	OPT_FOLLOWLOCATION: true,
 	OPT_MAXREDIRS:      10,
 	OPT_AUTOREFERER:    true,
@@ -139,7 +138,7 @@ func (this *Response) ReadAll() ([]byte, error) {
 	}
 
 	defer reader.Close()
-	return ioutil.ReadAll(reader)
+	return io.ReadAll(reader)
 }
 
 // Read response body into string.
@@ -154,7 +153,7 @@ func (this *Response) ToString() (string, error) {
 
 // Prepare a request.
 func prepareRequest(method string, url_ string, headers map[string]string,
-	body io.Reader, options map[int]interface{}) (*http.Request, error) {
+	body io.Reader, options map[int]any) (*http.Request, error) {
 	req, err := http.NewRequest(method, url_, body)
 
 	if err != nil {
@@ -185,7 +184,7 @@ func prepareRequest(method string, url_ string, headers map[string]string,
 // Prepare a transport.
 //
 // Handles timemout, proxy and maybe other transport related options here.
-func prepareTransport(options map[int]interface{}) (http.RoundTripper, error) {
+func prepareTransport(options map[int]any) (http.RoundTripper, error) {
 	transport := &http.Transport{}
 
 	connectTimeoutMS := 0
@@ -310,7 +309,7 @@ func prepareTransport(options map[int]interface{}) (http.RoundTripper, error) {
 }
 
 // Prepare a redirect policy.
-func prepareRedirect(options map[int]interface{}) (func(req *http.Request, via []*http.Request) error, error) {
+func prepareRedirect(options map[int]any) (func(req *http.Request, via []*http.Request) error, error) {
 	var redirectPolicy func(req *http.Request, via []*http.Request) error
 
 	if redirectPolicy_, ok := options[OPT_REDIRECT_POLICY]; ok {
@@ -363,7 +362,7 @@ func prepareRedirect(options map[int]interface{}) (func(req *http.Request, via [
 }
 
 // Prepare a cookie jar.
-func prepareJar(options map[int]interface{}) (http.CookieJar, error) {
+func prepareJar(options map[int]any) (http.CookieJar, error) {
 	var jar http.CookieJar
 	var err error
 	if optCookieJar_, ok := options[OPT_COOKIEJAR]; ok {
@@ -401,13 +400,13 @@ func NewHttpClient() *HttpClient {
 // Powerful and easy to use HTTP client.
 type HttpClient struct {
 	// Default options of this client.
-	options map[int]interface{}
+	options map[int]any
 
 	// Default headers of this client.
 	Headers map[string]string
 
 	// Options of current request.
-	oneTimeOptions map[int]interface{}
+	oneTimeOptions map[int]any
 
 	// Headers of current request.
 	oneTimeHeaders map[string]string
@@ -486,9 +485,9 @@ func (this *HttpClient) reset() {
 }
 
 // Temporarily specify an option of the current request.
-func (this *HttpClient) WithOption(k int, v interface{}) *HttpClient {
+func (this *HttpClient) WithOption(k int, v any) *HttpClient {
 	if this.oneTimeOptions == nil {
-		this.oneTimeOptions = make(map[int]interface{})
+		this.oneTimeOptions = make(map[int]any)
 	}
 	this.oneTimeOptions[k] = v
 
@@ -636,7 +635,7 @@ func (this *HttpClient) Head(url string) (*Response, error) {
 }
 
 // The GET request
-func (this *HttpClient) Get(url string, params ...interface{}) (*Response, error) {
+func (this *HttpClient) Get(url string, params ...any) (*Response, error) {
 	for _, p := range params {
 		url = addParams(url, toUrlValues(p))
 	}
@@ -645,7 +644,7 @@ func (this *HttpClient) Get(url string, params ...interface{}) (*Response, error
 }
 
 // The DELETE request
-func (this *HttpClient) Delete(url string, params ...interface{}) (*Response, error) {
+func (this *HttpClient) Delete(url string, params ...any) (*Response, error) {
 	for _, p := range params {
 		url = addParams(url, toUrlValues(p))
 	}
@@ -660,7 +659,7 @@ func (this *HttpClient) Delete(url string, params ...interface{}) (*Response, er
 //
 // If any of the params key starts with "@", it is considered as a form file
 // (similar to CURL but different).
-func (this *HttpClient) Post(url string, params interface{}) (*Response,
+func (this *HttpClient) Post(url string, params any) (*Response,
 	error) {
 	t := checkParamsType(params)
 	if t == 2 {
@@ -681,7 +680,7 @@ func (this *HttpClient) Post(url string, params interface{}) (*Response,
 }
 
 // Post with the request encoded as "multipart/form-data".
-func (this *HttpClient) PostMultipart(url string, params interface{}) (
+func (this *HttpClient) PostMultipart(url string, params any) (
 	*Response, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -712,7 +711,7 @@ func (this *HttpClient) PostMultipart(url string, params interface{}) (
 	return this.Do("POST", url, headers, body)
 }
 
-func (this *HttpClient) sendJson(method string, url string, data interface{}) (*Response, error) {
+func (this *HttpClient) sendJson(method string, url string, data any) (*Response, error) {
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 
@@ -733,7 +732,7 @@ func (this *HttpClient) sendJson(method string, url string, data interface{}) (*
 	return this.Do(method, url, headers, bytes.NewReader(body))
 }
 
-func (this *HttpClient) PostJson(url string, data interface{}) (*Response, error) {
+func (this *HttpClient) PostJson(url string, data any) (*Response, error) {
 	return this.sendJson("POST", url, data)
 }
 
@@ -743,12 +742,12 @@ func (this *HttpClient) Put(url string, body io.Reader) (*Response, error) {
 }
 
 // Put json data
-func (this *HttpClient) PutJson(url string, data interface{}) (*Response, error) {
+func (this *HttpClient) PutJson(url string, data any) (*Response, error) {
 	return this.sendJson("PUT", url, data)
 }
 
 // Patch json data
-func (this *HttpClient) PatchJson(url string, data interface{}) (*Response, error) {
+func (this *HttpClient) PatchJson(url string, data any) (*Response, error) {
 	return this.sendJson("PATCH", url, data)
 }
 

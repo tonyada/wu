@@ -77,7 +77,7 @@ func ExecCmd(cmdName string, args ...string) (string, string, error) {
 // // Paths have to be surrounded by "( " and " )"(space).
 // // Errors have to be surrounded by "[ " and " ]"(space).
 // // Note: it hasn't support windows yet, contribute is welcome.
-// func ColorLogS(format string, a ...interface{}) string {
+// func ColorLogS(format string, a ...any) string {
 // 	log := fmt.Sprintf(format, a...)
 
 // 	var clog string
@@ -129,6 +129,6 @@ func ExecCmd(cmdName string, args ...string) (string, string, error) {
 
 // // ColorLog prints colored log to stdout.
 // // See color rules in function 'ColorLogS'.
-// func ColorLog(format string, a ...interface{}) {
+// func ColorLog(format string, a ...any) {
 // 	fmt.Print(ColorLogS(format, a...))
 // }

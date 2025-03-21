@@ -7,14 +7,18 @@ import (
 )
 
 // random
-func Random(max int) int       { return rand.Intn(max) }
-func RandomByTime(max int) int { rand.Seed(time.Now().UnixNano()); return rand.Intn(max) }
+func Random(max int) int { return rand.Intn(max) }
+func RandomByTime(max int) int {
+	source := rand.NewSource(time.Now().UnixNano())
+	localRand := rand.New(source)
+	return localRand.Intn(max)
+}
 
 func RandomRange(min, max int) int { return rand.Intn(max-min) + min }
 func RandomRangeByTime(min, max int) int {
-	// var seedrand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min
+	source := rand.NewSource(time.Now().UnixNano())
+	localRand := rand.New(source)
+	return localRand.Intn(max-min) + min
 }
 
 func RandomExpFloat64() float64 {
@@ -89,7 +93,7 @@ const (
 func RandomStr(length int) string {
 	sb := []string{}
 	if length > 0 {
-		for i := 0; i < length; i++ {
+		for range length {
 			sb = append(sb, string(StrSource[rand.Intn(len(StrSource))]))
 		}
 	}
@@ -100,7 +104,7 @@ func RandomStr(length int) string {
 func RandomHex(length int) string {
 	sb := []string{}
 	if length > 0 {
-		for i := 0; i < length; i++ {
+		for range length {
 			sb = append(sb, string(HexSource[rand.Intn(len(HexSource))]))
 		}
 	}
@@ -111,7 +115,7 @@ func RandomHex(length int) string {
 func RandomNum(length int) string {
 	sb := []string{}
 	if length > 0 {
-		for i := 0; i < length; i++ {
+		for range length {
 			sb = append(sb, string(NumSource[rand.Intn(len(NumSource))]))
 		}
 	}

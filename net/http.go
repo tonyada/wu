@@ -150,7 +150,7 @@ func ClientPost(client *http.Client, url string, header http.Header, postData []
 }
 
 // HttpGetJSON gets the specified resource and mapping to struct.
-func HttpGetJSON(client *http.Client, url string, v interface{}) error {
+func HttpGetJSON(client *http.Client, url string, v any) error {
 	rc, err := ClientGet(client, url, nil)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func HttpGetJSON(client *http.Client, url string, v interface{}) error {
 
 // HttpPostJSON posts the specified resource with struct values,
 // and maps results to struct.
-func HttpPostJSON(client *http.Client, url string, body, v interface{}) error {
+func HttpPostJSON(client *http.Client, url string, body, v any) error {
 	data, err := json.Marshal(body)
 	if err != nil {
 		return err

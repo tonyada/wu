@@ -1,7 +1,7 @@
 package ip
 
 import (
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -50,7 +50,7 @@ func GetIPFromURL(url string) string {
 		return ""
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if Err(err) {
 		return ""
 	}

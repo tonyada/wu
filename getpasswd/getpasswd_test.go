@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -67,7 +66,7 @@ func TestGetPasswd(t *testing.T) {
 			// remove those from the pipe afterwards to mimic the console's
 			// interpretation of those bytes.
 			w.Close()
-			output, err := ioutil.ReadAll(r)
+			output, err := io.ReadAll(r)
 			if err != nil {
 				t.Fatal(err.Error())
 			}

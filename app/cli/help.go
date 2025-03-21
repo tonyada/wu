@@ -69,7 +69,7 @@ func ShowCommandHelp(c *Context, command string) {
 	os.Exit(1)
 }
 
-func printHelp(templ string, data interface{}) {
+func printHelp(templ string, data any) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 	t := template.Must(template.New("help").Parse(templ))
 	_ = t.Execute(w, data)

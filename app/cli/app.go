@@ -23,7 +23,7 @@ type App struct {
 	// The action to execute when no subcommands are specified
 	Action func(context *Context) `json:"-"`
 	// run result
-	ElseMe interface{} `json:"r"`
+	ElseMe any `json:"r"`
 	// run error
 	Error error `json:"e,omitempty"`
 }

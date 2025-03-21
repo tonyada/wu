@@ -104,12 +104,12 @@ func arrayUnique(arr []string) []string {
 	return result
 }
 
-func ReverseArray(s interface{}) {
+func ReverseArray(s any) {
 	ReverseSlice(s)
 }
 
 // panic if s is not a slice
-func ReverseSlice(s interface{}) {
+func ReverseSlice(s any) {
 	size := reflect.ValueOf(s).Len()
 	swap := reflect.Swapper(s)
 	for i, j := 0, size-1; i < j; i, j = i+1, j-1 {

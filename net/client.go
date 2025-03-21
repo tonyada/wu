@@ -2,7 +2,7 @@ package net
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
@@ -133,9 +133,9 @@ func (a *HttpClient) GET(url string) (string, error) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if Err(err) {
-		println("GET ioutil.ReadAll err", url)
+		println("GET io.ReadAll err", url)
 		return "", err
 	}
 	a.Cookies = myCookieJar.Cookies(req.URL)
@@ -158,9 +158,9 @@ func (a *HttpClient) POST(url, postData string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if Err(err) {
-		println("POST ioutil.ReadAll err", url)
+		println("POST io.ReadAll err", url)
 		return "", err
 	}
 	a.Cookies = myCookieJar.Cookies(req.URL)
@@ -192,9 +192,9 @@ func (a *HttpClient) XZSEC_POST(url, postData string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if Err(err) {
-		// println("POST ioutil.ReadAll err", url)
+		// println("POST io.ReadAll err", url)
 		return "", err
 	}
 	a.Cookies = myCookieJar.Cookies(req.URL)

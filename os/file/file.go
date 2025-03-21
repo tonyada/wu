@@ -2,7 +2,6 @@ package file
 
 import (
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 	"path"
@@ -71,10 +70,10 @@ func IsFileNotExist(filename string) bool {
 }
 
 func Read(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }
 func ReadStr(filename string) (string, error) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	return string(bytes), err
 }
 
@@ -218,7 +217,7 @@ func WriteFile(filename string, data []byte) error {
 	if Err(err) {
 		return err
 	}
-	return ioutil.WriteFile(filename, data, 0655)
+	return os.WriteFile(filename, data, 0655)
 }
 
 // IsFile returns true if given path is a file,

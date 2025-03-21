@@ -7,7 +7,7 @@ import (
 
 type ElseMeCli struct {
 	*App
-	ExtraResult interface{} `json:"m,omitempty"`
+	ExtraResult any `json:"m,omitempty"`
 }
 
 var elsemeCommand = Command{
@@ -29,14 +29,14 @@ func ElseMe(app *App) {
 	print(string(result))
 }
 
-func ElseMeExtra(app *App, extraResult interface{}) {
+func ElseMeExtra(app *App, extraResult any) {
 	elseme := &ElseMeCli{App: app, ExtraResult: extraResult}
 	result, err := json.Marshal(elseme)
 	ErrFatal(err)
 	print(string(result))
 }
 
-// func ElseMe(app *App, extraResult interface{}) {
+// func ElseMe(app *App, extraResult any) {
 // 	elseme := &ElseMeCli{App: app, ExtraResult: extraResult}
 // 	// json, err := gojson.MarshalIndent(elseme, "", "\t")
 // 	json, err := gojson.Marshal(elseme)

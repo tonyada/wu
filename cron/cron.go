@@ -38,10 +38,10 @@ func ChangeLoc(newLocation *time.Location) {
 const MAXJOBNUM = 10000
 
 // Map for the function task store
-var funcs = map[string]interface{}{}
+var funcs = map[string]any{}
 
 // Map for function and  params of function
-var fparams = map[string]([]interface{}){}
+var fparams = map[string]([]any){}
 
 type Job struct {
 
@@ -76,7 +76,7 @@ func (j *Job) shouldRun() bool {
 	return time.Now().After(j.nextRun)
 }
 
-//Run the job and immdiately reschedulei it
+// Run the job and immdiately reschedulei it
 func (j *Job) run() (result []reflect.Value, err error) {
 	f := reflect.ValueOf(funcs[j.jobFunc])
 	params := fparams[j.jobFunc]
@@ -95,13 +95,12 @@ func (j *Job) run() (result []reflect.Value, err error) {
 }
 
 // for given function fn , get the name of funciton.
-func getFunctionName(fn interface{}) string {
+func getFunctionName(fn any) string {
 	return runtime.FuncForPC(reflect.ValueOf((fn)).Pointer()).Name()
 }
 
 // Specifies the jobFunc that should be called every time the job runs
-//
-func (j *Job) Do(jobFun interface{}, params ...interface{}) {
+func (j *Job) Do(jobFun any, params ...any) {
 	typ := reflect.TypeOf(jobFun)
 	if typ.Kind() != reflect.Func {
 		panic("only function can be schedule into the job queue.")
@@ -115,8 +114,8 @@ func (j *Job) Do(jobFun interface{}, params ...interface{}) {
 	j.scheduleNextRun()
 }
 
-//	s.Every(1).Day().At("10:30").Do(task)
-//	s.Every(1).Monday().At("10:30").Do(task)
+// s.Every(1).Day().At("10:30").Do(task)
+// s.Every(1).Monday().At("10:30").Do(task)
 func (j *Job) At(t string) *Job {
 	hour := int((t[0]-'0')*10 + (t[1] - '0'))
 	min := int((t[3]-'0')*10 + (t[4] - '0'))
@@ -146,7 +145,7 @@ func (j *Job) At(t string) *Job {
 	return j
 }
 
-//Compute the instant when this job should run next
+// Compute the instant when this job should run next
 func (j *Job) scheduleNextRun() {
 	if j.lastRun == time.Unix(0, 0) {
 		if j.unit == "weeks" {
@@ -211,13 +210,13 @@ func (j *Job) Minute() (job *Job) {
 	return
 }
 
-//set the unit with minute
+// set the unit with minute
 func (j *Job) Minutes() (job *Job) {
 	j.unit = "minutes"
 	return j
 }
 
-//set the unit with hour, which interval is 1
+// set the unit with hour, which interval is 1
 func (j *Job) Hour() (job *Job) {
 	if j.interval != 1 {
 		panic("")
@@ -330,7 +329,7 @@ func (j *Job) Sunday() (job *Job) {
 	return
 }
 
-//Set the units as weeks
+// Set the units as weeks
 func (j *Job) Weeks() *Job {
 	j.unit = "weeks"
 	return j
@@ -345,7 +344,7 @@ type Scheduler struct {
 	size int
 }
 
-// Scheduler implements the sort.Interface{} for sorting jobs, by the time nextRun
+// Scheduler implements the sort.any for sorting jobs, by the time nextRun
 
 func (s *Scheduler) Len() int {
 	return s.size
@@ -426,7 +425,7 @@ func (s *Scheduler) RunAllwithDelay(d int) {
 }
 
 // Remove specific job j
-func (s *Scheduler) Remove(j interface{}) {
+func (s *Scheduler) Remove(j any) {
 	i := 0
 	for ; i < s.size; i++ {
 		if s.jobs[i].jobFunc == getFunctionName(j) {
@@ -516,7 +515,7 @@ func Clear() {
 }
 
 // Remove
-func Remove(j interface{}) {
+func Remove(j any) {
 	defaultScheduler.Remove(j)
 }
 

@@ -50,8 +50,8 @@ func addFormFile(writer *multipart.Writer, name, path string) error {
 }
 
 // Convert options with string keys to desired format.
-func Option(o map[string]interface{}) map[int]interface{} {
-	rst := make(map[int]interface{})
+func Option(o map[string]any) map[int]any {
+	rst := make(map[int]any)
 	for k, v := range o {
 		k := "OPT_" + strings.ToUpper(k)
 		if num, ok := CONST[k]; ok {
@@ -63,8 +63,8 @@ func Option(o map[string]interface{}) map[int]interface{} {
 }
 
 // Merge options(latter ones have higher priority)
-func mergeOptions(options ...map[int]interface{}) map[int]interface{} {
-	rst := make(map[int]interface{})
+func mergeOptions(options ...map[int]any) map[int]any {
+	rst := make(map[int]any)
 
 	for _, m := range options {
 		for k, v := range m {
@@ -90,7 +90,7 @@ func mergeHeaders(headers ...map[string]string) map[string]string {
 
 // Does the params contain a file?
 func checkParamFile(params url.Values) bool {
-	for k, _ := range params {
+	for k := range params {
 		if k[0] == '@' {
 			return true
 		}
@@ -111,11 +111,11 @@ func hasOption(opt int, options []int) bool {
 }
 
 // Map is a mixed structure with options and headers
-type Map map[interface{}]interface{}
+type Map map[any]any
 
 // Parse the Map, return options and headers
-func parseMap(m Map) (map[int]interface{}, map[string]string) {
-	var options = make(map[int]interface{})
+func parseMap(m Map) (map[int]any, map[string]string) {
+	var options = make(map[int]any)
 	var headers = make(map[string]string)
 
 	if m == nil {
@@ -143,7 +143,7 @@ func parseMap(m Map) (map[int]interface{}, map[string]string) {
 	return options, headers
 }
 
-func toUrlValues(v interface{}) url.Values {
+func toUrlValues(v any) url.Values {
 	switch t := v.(type) {
 	case url.Values:
 		return t
@@ -162,7 +162,7 @@ func toUrlValues(v interface{}) url.Values {
 	}
 }
 
-func checkParamsType(v interface{}) int {
+func checkParamsType(v any) int {
 	switch v.(type) {
 	case url.Values, map[string][]string, map[string]string:
 		return 1
@@ -175,7 +175,7 @@ func checkParamsType(v interface{}) int {
 	}
 }
 
-func toReader(v interface{}) *bytes.Reader {
+func toReader(v any) *bytes.Reader {
 	switch t := v.(type) {
 	case []byte:
 		return bytes.NewReader(t)

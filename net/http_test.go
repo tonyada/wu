@@ -1,7 +1,7 @@
 package net
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -42,7 +42,7 @@ func TestClientGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClientGet:\n Expect => %v\n Got => %s\n", nil, err)
 	}
-	p, err := ioutil.ReadAll(rc)
+	p, err := io.ReadAll(rc)
 	if err != nil {
 		t.Errorf("ClientGet:\n Expect => %v\n Got => %s\n", nil, err)
 	}

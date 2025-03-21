@@ -47,8 +47,8 @@ func (w *WuErr) Err(err error, desc string) bool {
 }
 
 // New Error
-func ErrNew(s string) error                      { return errors.New(s) }
-func Errf(format string, a ...interface{}) error { return ErrNew(fmt.Sprintf(format, a...)) }
+func ErrNew(s string) error              { return errors.New(s) }
+func Errf(format string, a ...any) error { return ErrNew(fmt.Sprintf(format, a...)) }
 
 // check error just return bool
 // if error != nil then has error

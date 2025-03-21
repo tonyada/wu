@@ -9,103 +9,92 @@ type WuPrint struct {
 	isOn bool
 }
 
-// init WuPrint std
+// init WuPrint std; using a package-level variable is generally fine here.
 var wuprint = &WuPrint{isOn: true}
 
+// NewWuPrint creates a new WuPrint instance.  Consider if this is really needed.
 func NewWuPrint() *WuPrint { return &WuPrint{isOn: true} }
 
-// control all prints output on/off
+// Control all prints output on/off.  Could be simplified.
 func PrintOn()  { wuprint.isOn = true }
 func PrintOff() { wuprint.isOn = false }
 
-// set print output bool
+// SetPrint sets the print output bool.  Could be combined with PrintOn/PrintOff.
 func (w *WuPrint) SetPrint(b bool) { w.isOn = b }
 func SetPrint(b bool)              { wuprint.SetPrint(b) }
 func SetPrintOn()                  { wuprint.SetPrint(true) }
 func SetPrintOff()                 { wuprint.SetPrint(false) }
 
-// fmt.print
-func (w *WuPrint) Print(print_type string, a ...interface{}) {
+// Print handles both Print and Println functionality.  Simplified.
+func (w *WuPrint) Print(println bool, a ...any) {
 	if !w.isOn {
 		return
 	}
-	switch print_type {
-	case "print":
+	if println {
+		fmt.Println(fmt.Sprint(a...))
+	} else {
 		fmt.Print(fmt.Sprint(a...))
-	case "println":
-		fmt.Println(fmt.Sprint(a...))
-	default:
-		fmt.Println(fmt.Sprint(a...))
 	}
 }
-func Print(a ...interface{})     { wuprint.Print("print", a...) }
-func MustPrint(a ...interface{}) { fmt.Print(fmt.Sprint(a...)) }
 
-func Println(a ...interface{})     { wuprint.Print("println", a...) }
-func MustPrintln(a ...interface{}) { fmt.Println(fmt.Sprint(a...)) }
+func Print(a ...any)     { wuprint.Print(false, a...) }
+func MustPrint(a ...any) { fmt.Print(fmt.Sprint(a...)) }
 
-// fmt.Printf
-func (w *WuPrint) Printf(format string, a ...interface{}) {
+func Println(a ...any)     { wuprint.Print(true, a...) }
+func MustPrintln(a ...any) { fmt.Println(fmt.Sprint(a...)) }
+
+// Printf handles formatted printing.  No change needed here.
+func (w *WuPrint) Printf(format string, a ...any) {
 	if w.isOn {
 		fmt.Printf(format, a...)
 	}
 }
-func Printf(format string, a ...interface{})       { wuprint.Printf(format, a...) }
-func MustPrintf(format string, a ...interface{})   { fmt.Printf(format, a...) }
-func Printfln(format string, a ...interface{})     { wuprint.Printf(format+"\n", a...) }
-func MustPrintfln(format string, a ...interface{}) { fmt.Println(fmt.Sprintf(format, a...)) }
+func Printf(format string, a ...any)       { wuprint.Printf(format, a...) }
+func MustPrintf(format string, a ...any)   { fmt.Printf(format, a...) }
+func Printfln(format string, a ...any)     { wuprint.Printf(format+"\n", a...) }
+func MustPrintfln(format string, a ...any) { fmt.Println(fmt.Sprintf(format, a...)) }
 
-// fmt.Fprintf
-func (w *WuPrint) Fprintf(o io.Writer, format string, a ...interface{}) {
+// Fprintf handles formatted printing to an io.Writer. No change needed here.
+func (w *WuPrint) Fprintf(o io.Writer, format string, a ...any) {
 	if w.isOn {
 		fmt.Fprintf(o, format, a...)
 	}
 }
-func Fprintf(w io.Writer, format string, a ...interface{})     { wuprint.Fprintf(w, format, a...) }
-func MustFprintf(w io.Writer, format string, a ...interface{}) { fmt.Fprintf(w, format, a...) }
+func Fprintf(w io.Writer, format string, a ...any)     { wuprint.Fprintf(w, format, a...) }
+func MustFprintf(w io.Writer, format string, a ...any) { fmt.Fprintf(w, format, a...) }
 
-func Newline()   { println("") }
+// Newline functions; these are fine as they are.
+func Newline()   { println() }
 func New2lines() { println("\n") }
 func Newlines(lines int) {
-	for i := 0; i < lines; i++ {
+	for range lines {
 		Newline()
 	}
 }
 
+// PrintByte prints a byte slice.  Improved for readability and efficiency.
 func PrintByte(b []byte) {
-	print("[]byte{")
-	for i := 0; i < len(b); i++ {
-		if i != len(b)-1 {
-			print(Sprintf("%v,", b[i]))
-		} else {
-			// last byte without ,
-			print(Sprintf("%v", b[i]))
+	fmt.Printf("[]byte{")
+	for i, v := range b {
+		fmt.Printf("%v", v)
+		if i < len(b)-1 {
+			fmt.Print(",")
 		}
 	}
-	println("}")
+	fmt.Println("}")
 }
 
+// PrintStringArray prints a string array.  No change needed here.
 func PrintStringArray(s []string) {
 	for i, v := range s {
-		println(i, v)
+		fmt.Println(i, v)
 	}
 }
 
-// fmt.Scanf
-func Scanf(format string, a ...interface{}) (int, error) { return fmt.Scanf(format, a...) }
-
-// Scanln is similar to Scan, but stops scanning at a newline and after the final item there must be a newline or EOF.
-func Scanln(a ...interface{}) (int, error) { return fmt.Scanln(a...) }
-
-// fmt.Sprint
-func Sprint(a ...interface{}) string { return fmt.Sprint(a...) }
-
-// fmt.Sprintf
-func Sprintf(format string, a ...interface{}) string { return fmt.Sprintf(format, a...) }
-
-// Sprintln formats using the default formats for its operands and returns the resulting string.
-// Spaces are always added between operands and a newline is appended.
-func Sprintln(a ...interface{}) string { return fmt.Sprintln(a...) }
-
-// fmt.Errorf
-func Errorf(format string, a ...interface{}) error { return fmt.Errorf(format, a...) }
+// Wrapper functions for fmt package functions; these are fine as they are.
+func Scanf(format string, a ...any) (int, error) { return fmt.Scanf(format, a...) }
+func Scanln(a ...any) (int, error)               { return fmt.Scanln(a...) }
+func Sprint(a ...any) string                     { return fmt.Sprint(a...) }
+func Sprintf(format string, a ...any) string     { return fmt.Sprintf(format, a...) }
+func Sprintln(a ...any) string                   { return fmt.Sprintln(a...) }
+func Errorf(format string, a ...any) error       { return fmt.Errorf(format, a...) }

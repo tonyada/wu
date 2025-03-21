@@ -136,26 +136,26 @@ func UnderlineStr(s string) string {
 func BlineStr(s string) string {
 	return "\x1b[5m" + s + "\x1b[25m"
 }
-func PrintFgColor(fg MyTermColor, s string, a ...interface{}) {
+func PrintFgColor(fg MyTermColor, s string, a ...any) {
 	ANSI_fgcolor(fg)
 	fmt.Print(s, a)
 	resetColor()
 }
-func PrintRed(s string, a ...interface{}) {
+func PrintRed(s string, a ...any) {
 	PrintFgColor(Red, s, a)
 }
-func PrintRedln(s string, a ...interface{}) {
+func PrintRedln(s string, a ...any) {
 	PrintRed(s+"\n", a)
 }
-func PrintYellow(s string, a ...interface{}) {
+func PrintYellow(s string, a ...any) {
 	PrintFgColor(Yellow, s, a)
 }
-func PrintYellowln(s string, a ...interface{}) {
+func PrintYellowln(s string, a ...any) {
 	PrintYellow(s+"\n", a)
 }
-func PrintWhite(s string, a ...interface{}) {
+func PrintWhite(s string, a ...any) {
 	PrintFgColor(White, s, a)
 }
-func PrintWhiteln(s string, a ...interface{}) {
+func PrintWhiteln(s string, a ...any) {
 	PrintWhite(s+"\n", a)
 }
