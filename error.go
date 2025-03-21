@@ -35,6 +35,8 @@ func (w *WuErr) Err(err error, desc string) bool {
 
 // ErrNew creates a new error.
 func ErrNew(s string) error { return fmt.Errorf(s) } //Use fmt.Errorf for better error wrapping
+// New Error
+func Errf(format string, a ...any) error { return ErrNew(fmt.Sprintf(format, a...)) }
 
 // Err checks for an error and prints it if enabled. Returns true if an error occurred.
 func Err(err error) bool { return wuerr.Err(err, "") }
