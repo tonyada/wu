@@ -25,14 +25,40 @@ const (
 	LstdFlags = log.Ldate | log.Ltime
 	// more: log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile | log.Lshortfile
 	LstdDebugFlags = log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile
+
+	// foreground colors
+	colorFGBlack   = "#000"
+	colorFGWhite   = "#fff"
+
+	// background colors
+	colorBGLightGray = "eee"
+	colorBGRed       = "124"
+	colorBGBlue      = "26"
+	colorBGYellow    = "227"
+	colorBGOrange    = "160"
+	colorBGGreen     = "118"
+	colorBGPink      = "191"
+	colorBGLightYellow = "226"
+
+	// log prefixes
+	logPrefixInfo    = "[INFO]"
+	logPrefixWarn    = "[WARN]"
+	logPrefixDanger  = "[DAGR]"
+	logPrefixSuccess = "[SUCC]"
+
+	// log separator line
+	logSeparator = "────────────────────────────────────────────────────────────────────────────────────────────────────"
+
+	// caller stack range for log trace
+	callerStackMin = 3
+	callerStackMax = 8
 )
 
 // log.* fmt.* err != nil checker's bool
 type WuLog struct {
 	Logger    *log.Logger // go default log
-	prefix    string      // log's prefix
-	calldepth int         // log 深度 默认是2，但我又重载了所以是3
-	isOutput  bool        // 是否输出的bool
+	calldepth int         // log call depth, set to 4 to skip wrapper functions
+	isOutput  bool        // whether to output logs
 	// isDebug
 }
 
@@ -49,7 +75,6 @@ var wulog = NewWuLog(WuLogger)
 func NewWuLog(logger *log.Logger) *WuLog {
 	return &WuLog{
 		Logger:    logger,
-		prefix:    "",
 		calldepth: 4,
 		isOutput:  true,
 	}
@@ -103,11 +128,11 @@ func (w *WuLog) logColorful(fg, bg, prefix string, s ...any) {
 		return
 	}
 
-	output := ""
 	// get all function names
-	allFuncNames := "\n────────────────────────────────────────────────────────────────────────────────────────────────────\n"
+	var allFuncNames strings.Builder
+	allFuncNames.WriteString("\n" + logSeparator + "\n")
 	funcCounter := 0
-	for i := 3; i < 8; i++ { // Optimized loop range
+	for i := callerStackMin; i < callerStackMax; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		if !ok {
 			break
@@ -117,25 +142,27 @@ func (w *WuLog) logColorful(fg, bg, prefix string, s ...any) {
 		if funcName == "" || funcName == "main.main" || strings.Contains(funcName, "reflect.") || strings.Contains(funcName, "wu.") || strings.Contains(funcName, "runtime.") {
 			continue
 		}
-		allFuncNames += fmt.Sprintf("%d [%s:%d]\t -> %s()\n", funcCounter+1, file, line, funcName)
+		allFuncNames.WriteString(fmt.Sprintf("%d [%s:%d]\t -> %s()\n", funcCounter+1, file, line, funcName))
 		funcCounter++
 	}
 
+	var output strings.Builder
 	if prefix == "" { // no prefix then print out log with color
 		colorOut := termenv.String(" " + fmt.Sprint(s...) + " ")
 		colorOut = colorOut.Foreground(p.Color(fg))
 		colorOut = colorOut.Background(p.Color(bg))
-		output = fmt.Sprintf("%s %s", allFuncNames, fmt.Sprintf(" %v", colorOut))
+		output.WriteString(allFuncNames.String())
+		output.WriteString(fmt.Sprintf(" %v", colorOut))
 
 	} else { // only print out color prefix
 		colorPrefix := termenv.String(prefix)
 		colorPrefix = colorPrefix.Foreground(p.Color(fg))
 		colorPrefix = colorPrefix.Background(p.Color(bg))
 		// print out with colorful prefix
-		output = fmt.Sprintf(" %v %v", colorPrefix, fmt.Sprint(s...))
+		output.WriteString(fmt.Sprintf(" %v %v", colorPrefix, fmt.Sprint(s...)))
 	}
-	output += "\n────────────────────────────────────────────────────────────────────────────────────────────────────\n"
-	w.Logger.Output(w.calldepth, output)
+	output.WriteString("\n" + logSeparator + "\n")
+	w.Logger.Output(w.calldepth, output.String())
 }
 
 // LogWithColor logs a message with specified foreground and background colors.
@@ -148,22 +175,19 @@ func LogWithColorPrefix(fg, bg, prefix string, s ...any) {
 
 // LogType logs a message with a predefined color scheme based on the log type.
 func (w *WuLog) LogType(print_type int, s ...any) {
-	if !w.isOutput {
-		return
-	}
 	switch print_type {
 	case LOG_NOTE:
-		w.logColorful("#000", "#eee", "", s...)
+		w.logColorful(colorFGBlack, colorBGLightGray, "", s...)
 	case LOG_ERROR:
-		w.logColorful("#fff", "124", "", s...)
+		w.logColorful(colorFGWhite, colorBGRed, "", s...)
 	case LOG_INFO:
-		w.logColorful("#fff", "26", "", s...)
+		w.logColorful(colorFGWhite, colorBGBlue, "", s...)
 	case LOG_WARNING:
-		w.logColorful("#000", "227", "", s...)
+		w.logColorful(colorFGBlack, colorBGYellow, "", s...)
 	case LOG_DANGER:
-		w.logColorful("#fff", "160", "", s...)
+		w.logColorful(colorFGWhite, colorBGOrange, "", s...)
 	case LOG_SUCCESS:
-		w.logColorful("#000", "118", "", s...)
+		w.logColorful(colorFGBlack, colorBGGreen, "", s...)
 	default:
 		w.logColorful("", "", "", s...)
 	}
@@ -198,20 +222,20 @@ func LogOK(s ...any) { wulog.LogType(LOG_SUCCESS, s...) }
 
 // LogWithPrefix logs a message with a custom prefix.
 func LogWithPrefix(prefix string, s ...any) {
-	wulog.logColorful("#000", "191", "["+prefix+"]", s...)
+	wulog.logColorful(colorFGBlack, colorBGPink, "["+prefix+"]", s...)
 }
 
 // LogInfoPrefix logs an informational message with a "[INFO]" prefix.
-func LogInfoPrefix(s ...any) { wulog.logColorful("#fff", "26", "[INFO]", s...) }
+func LogInfoPrefix(s ...any) { wulog.logColorful(colorFGWhite, colorBGBlue, logPrefixInfo, s...) }
 
 // LogWarnPrefix logs a warning message with a "[WARN]" prefix.
-func LogWarnPrefix(s ...any) { wulog.logColorful("#000", "226", "[WARN]", s...) }
+func LogWarnPrefix(s ...any) { wulog.logColorful(colorFGBlack, colorBGLightYellow, logPrefixWarn, s...) }
 
 // LogDangerPrefix logs a danger message with a "[DAGR]" prefix.
-func LogDangerPrefix(s ...any) { wulog.logColorful("#fff", "160", "[DAGR]", s...) }
+func LogDangerPrefix(s ...any) { wulog.logColorful(colorFGWhite, colorBGOrange, logPrefixDanger, s...) }
 
 // LogSuccessPrefix logs a success message with a "[SUCC]" prefix.
-func LogSuccessPrefix(s ...any) { wulog.logColorful("#000", "118", "[SUCC]", s...) }
+func LogSuccessPrefix(s ...any) { wulog.logColorful(colorFGBlack, colorBGGreen, logPrefixSuccess, s...) }
 
 // MustLogln logs a message with a newline without color and always outputs.
 func MustLogln(s ...any) { wulog.Logger.Output(wulog.calldepth, fmt.Sprintln(s...)) }
@@ -256,6 +280,6 @@ func LogStruct(st any) { wulog.LogStruct(st) }
 
 // LogStruct logs the details of a struct with color.
 func (w *WuLog) LogStruct(st any) {
-	w.logColorful("#fff", "26", "", "LogStruct:")
+	w.logColorful(colorFGWhite, colorBGBlue, "", "LogStruct:")
 	structEx.Explicit(reflect.ValueOf(st), 0)
 }

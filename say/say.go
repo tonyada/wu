@@ -50,7 +50,7 @@ func SayInteractive(s ...string) error {
 // waiting for saying finished
 func SayWait(s ...string) error {
 	if runtime.GOOS == "darwin" {
-		cli := str.Fields(fmt.Sprintf("-r 230 \"%v\"", s))
+		cli := str.Fields(fmt.Sprintf("-r 380 \"%v\"", s))
 		cmd := exec.Command("say", cli...)
 		// cmd := exec.Command("say", s...)
 		cmd.Run()
